@@ -8,23 +8,25 @@
 #include "block.h"
 
 namespace blockchain {
-class BlockChain {
+class BlockChain final {
 public:
     BlockChain();
 
     /**
      * Add new block to tail of chain
      */
-    int push(Block new_tail);
+    void push(const Block &new_tail);
+
+    std::size_t size() const;
 
     /**
-     * Delete tail block from chain and return it
+     * Delete tail block from the chain and return it
      */
     Block pop();
 
-    int save_to_file(std::string filename);
+    void save_to_file(const std::string &filename) const;
 
-    int load_from_file(std::string filename);
+    void load_from_file(const std::string &filename);
 
     /**
      * Print to console messages from n tail blocks
@@ -34,8 +36,14 @@ public:
      */
     int print_last_messages(std::size_t n);
 
-private:
+    static bool synchronize(BlockChain &lhs, BlockChain &rhs);
+
     ~BlockChain();
+
+private:
+    BlockChain fork(std::size_t index) const;
+
+    void mend(std::size_t last_correct, const BlockChain &other);
 
     std::list<Block> chain;
 };

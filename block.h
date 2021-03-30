@@ -3,37 +3,46 @@
 #include <string>
 #include <ctime>
 #include <cstdint>
+#include <iostream>
 
 namespace blockchain {
-class Block {
+class Block final {
 public:
-    Block();
+    Block(std::string message, std::uint64_t nonce);
 
-    Block(std::string message, std::uint64_t nounce, std::uint64_t hash);
+    Block(std::string message, std::uint64_t nonce, const Block &block);
 
-    Block(const Block &block);
+    void serialize(std::ostream &input) const;
 
-private:
+    static Block deserialize(std::istream &input);
+
+    std::string message() const;
+
+    std::uint64_t hash() const;
+
     ~Block();
 
-    /**
-     * Parameter for proof-of-work
-     */
-    std::uint64_t nounce;
+private:
+    Block(std::string message, std::uint64_t nonce, std::uint64_t hash, std::time_t timestamp);
 
     /**
-     * Hash of previouse block, 0 for the first block
+     * Parameter for the Proof of Work
      */
-    std::uint64_t hash;
+    std::uint64_t nonce_;
+
+    /**
+     * Hash of previous block, 0 for the first block
+     */
+    std::uint64_t hash_;
 
     /**
      * Timestamp when block was created
      */
-    std::time_t timestamp;
+    std::time_t timestamp_;
 
     /**
      * Data stored in one block of blockchain
      */
-    std::string message;
+    std::string message_;
 };
 }
