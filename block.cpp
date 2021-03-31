@@ -1,6 +1,10 @@
 #include "block.h"
+#include "utils.h"
+
 #include <functional>
 #include <utility>
+#include "json.h"
+
 
 namespace blockchain {
 Block::Block(std::string message, const std::uint64_t nonce)
@@ -9,30 +13,35 @@ Block::Block(std::string message, const std::uint64_t nonce)
 
 Block::Block(std::string message, const std::uint64_t nonce, const blockchain::Block &block)
         : nonce_{block.nonce_}, timestamp_{std::time(nullptr)}, message_{std::move(message)} {
-    hash_ = std::hash<std::string>{}(std::to_string(nonce) + std::to_string(block.hash_));
+    hash_ = std::hash<std::string>{}(message);
+    hash_combine(hash_, std::hash<std::time_t>{}(timestamp_));
+    hash_combine(hash_, std::hash<std::uint64_t>{}(nonce));
+    hash_combine(hash_, block.hash());
 }
 
-Block::~Block() {
-}
-
-void Block::serialize(std::ostream &input) const {
-    input << message_ << " "
-          << nonce_ << " "
-          << hash_ << " "
-          << timestamp_ << std::endl;
+nlohmann::json Block::serialize() const {
+    return nlohmann::json{
+            {"message",   message_},
+            {"nonce",     nonce_},
+            {"hash",      hash_},
+            {"timestamp", timestamp_}
+    };
 }
 
 Block::Block(std::string message, std::uint64_t nonce, std::uint64_t hash, std::time_t timestamp)
         : message_{std::move(message)}, nonce_{nonce}, hash_{hash}, timestamp_{timestamp} {
 }
 
-Block Block::deserialize(std::istream &in) {
+Block Block::deserialize(const nlohmann::json &j) {
     std::string message;
     std::uint64_t nonce;
     std::uint64_t hash;
     std::time_t timestamp;
 
-    in >> message >> nonce >> hash >> timestamp;
+    j.at("message").get_to(message);
+    j.at("nonce").get_to(nonce);
+    j.at("hash").get_to(hash);
+    j.at("timestamp").get_to(timestamp);
     return Block(message, nonce, hash, timestamp);
 }
 

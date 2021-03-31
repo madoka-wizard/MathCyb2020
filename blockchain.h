@@ -10,8 +10,6 @@
 namespace blockchain {
 class BlockChain final {
 public:
-    BlockChain();
-
     /**
      * Add new block to tail of chain
      */
@@ -37,8 +35,6 @@ public:
     int print_last_messages(std::size_t n);
 
     static bool synchronize(BlockChain &lhs, BlockChain &rhs);
-
-    ~BlockChain();
 
 private:
     BlockChain fork(std::size_t index) const;

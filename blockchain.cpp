@@ -1,12 +1,11 @@
 #include "blockchain.h"
+#include "json.h"
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <algorithm>
 
 namespace blockchain {
-BlockChain::BlockChain() {
-}
-
 void BlockChain::push(const blockchain::Block &new_tail) {
     chain.push_back(new_tail);
 }
@@ -19,15 +18,19 @@ Block blockchain::BlockChain::pop() {
 
 void BlockChain::save_to_file(const std::string &filename) const {
     std::ofstream output(filename);
+    nlohmann::json j;
     for (auto &block : chain) {
-        block.serialize(output);
+        j.push_back(block.serialize());
     }
+    output << std::setw(4) << j;
 }
 
 void BlockChain::load_from_file(const std::string &filename) {
     std::ifstream input(filename);
-    while (input.good()) {
-        push(Block::deserialize(input));
+    nlohmann::json j;
+    input >> j;
+    for (const auto &current : j) {
+        push(Block::deserialize(current));
     }
 }
 
@@ -38,9 +41,6 @@ int BlockChain::print_last_messages(std::size_t n) {
         std::cout << it->message() << std::endl;
     }
     return n;
-}
-
-BlockChain::~BlockChain() {
 }
 
 std::size_t BlockChain::size() const {
@@ -80,7 +80,8 @@ bool BlockChain::synchronize(BlockChain &lhs, BlockChain &rhs) {
         auto rhs_it = rhs.chain.begin();
         for (auto i = 0; i < rhs.size(); ++i, ++rhs_it) {
             if (rhs_it->hash() == it->hash()) {
-                rhs.mend(i, lhs.fork(index + 1));
+                auto tail = lhs.fork(index + 1);
+                rhs.mend(i, tail);
                 return true;
             }
         }

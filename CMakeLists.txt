@@ -5,8 +5,4 @@ set(CMAKE_CXX_STANDARD 17)
 
 include_directories(.)
 
-add_executable(MathCyb2020
-        block.h block.cpp
-        blockchain.h blockchain.cpp
-        main.cpp
-        )
+add_executable(MathCyb2020 block.cpp blockchain.cpp main.cpp)

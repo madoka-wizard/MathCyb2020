@@ -4,6 +4,7 @@
 #include <ctime>
 #include <cstdint>
 #include <iostream>
+#include "json.h"
 
 namespace blockchain {
 class Block final {
@@ -12,15 +13,13 @@ public:
 
     Block(std::string message, std::uint64_t nonce, const Block &block);
 
-    void serialize(std::ostream &input) const;
+    nlohmann::json serialize() const;
 
-    static Block deserialize(std::istream &input);
+    static Block deserialize(const nlohmann::json& j);
 
     std::string message() const;
 
     std::uint64_t hash() const;
-
-    ~Block();
 
 private:
     Block(std::string message, std::uint64_t nonce, std::uint64_t hash, std::time_t timestamp);
